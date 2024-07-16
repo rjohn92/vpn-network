@@ -28,6 +28,7 @@ To run this project locally, follow these steps:
    git clone https://github.com/rjohn92/vpn-network.git
    cd vpn-network
 
+## To Run
 1. Go here:
 http://localhost:5000/
 
