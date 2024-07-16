@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VPN Service</title>
+</head>
+<body>
+    <h1>VPN Service</h1>
+    <form id="credentials-form">
+        <label for="ovpn_provider">OVPN Provider:</label>
+        <select id="ovpn_provider" name="ovpn_provider"> 
+            {% for ovpn_provider in ovpn_providers %}
+                <option value="{{ ovpn_provider }}">{{ ovpn_provider }}</option>
+            {% endfor %}
+        </select><br><br>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username"><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password"><br><br>
+        <label for="ovpn_file">OVPN File:</label>
+        <select id="ovpn_file" name="ovpn_file"> 
+            {% for ovpn_file in ovpn_files %}
+                <option value="{{ ovpn_file }}">{{ ovpn_file }}</option>
+            {% endfor %}
+        </select><br><br>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="status"></div>
+    <h2>VPN Status</h2>
+    <p>Your VPN IP address is: {{ ip_address }}</p>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
