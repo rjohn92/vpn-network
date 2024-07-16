@@ -3,7 +3,7 @@
 ## Prerequisites
 - Make sure you have docker install first. If you need to install docker go [here](https://docs.docker.com/engine/install/) and follow the instructions for your respective operating system. 
 
-- Make sure you have an OpenVPN service provider account set up. Folow [this link for instructions](https://www.tp-link.com/us/support/faq/3763/) on how to access your OpenVPN credentials (which are different from your username/email and password account setup)
+- Make sure you have an OpenVPN service provider account set up. Follow [this link for instructions](https://www.tp-link.com/us/support/faq/3763/) on how to access your OpenVPN credentials (which are different from your username/email and password account setup)
 
 The VPN Network Management System is a Flask-based web application designed to create a graphical user interface (GUI) for managing VPN connections using OpenVPN configuration files. The primary goal of this project is to simplify the process of managing VPN connections and integrating them with existing Docker containers on your system.
 
