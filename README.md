@@ -30,3 +30,9 @@ To run this project locally, follow these steps:
 
 1. Go here:
 http://localhost:5000/
+
+- Enter your OpenVPN service provider, username, password and the openvpn configuration you would like to use
+- Click submit to provide the connection to your VPN
+- Your current VPN should be displayed now. 
+- You should see a list of containers you have available on your system. Choose which container to route through your VPN.
+- To terminate the connection to your VPN click on the terminate button next to the container. Or terminate all by clicking 'Close VPN' at the top
