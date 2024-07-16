@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+import docker
+
 def vpn_list():
     config_dir = './vpn/config'  # This path should match the volume mapping in docker-compose.yml
     ovpn_configs = os.listdir(config_dir)
@@ -41,3 +43,16 @@ def get_ip_address():
             ip_address = line.split()[1].split('/')[0]
             return ip_address
     return "Couldn't find"
+
+
+def get_docker_containers():
+    client = docker.from_env()
+    containers = client.containers.list()
+    container_info = []
+    for container in containers:
+        container_info.append([
+            container.short_id,
+            container.name,
+            container.status
+        ])
+    return container_info

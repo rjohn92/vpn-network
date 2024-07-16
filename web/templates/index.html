@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>VPN Service</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheet.css') }}">
 </head>
 <body>
     <h1>VPN Service</h1>
@@ -28,6 +29,23 @@
     <div id="status"></div>
     <h2>VPN Status</h2>
     <p>Your VPN IP address is: {{ ip_address }}</p>
+    
+    <h3>Docker Containers</h3>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Status</th>
+        </tr>
+        {% for container in docker_containers %}
+        <tr>
+            <td>{{container[0]}}</td>
+            <td>{{container[1]}}</td>
+            <td>{{container[2]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

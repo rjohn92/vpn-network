@@ -2,7 +2,7 @@ import json
 from flask import Flask, request, render_template, jsonify
 import os
 import sys
-from vpn.vpn_manager import vpn_list, vpn_providers, get_ip_address
+from vpn.vpn_manager import get_docker_containers,vpn_list, vpn_providers, get_ip_address
 
 app = Flask(__name__)
 
@@ -11,12 +11,10 @@ CONFIG_FILE_PATH = '/app/vpn/config/vpn_config.json'
 @app.route('/')
 def index():
     #generate the list of ovpn files and providers
-    ovpn_files=vpn_list()
-    ovpn_providers=vpn_providers()
-    ip_address = get_ip_address()
-    return render_template('index.html', ovpn_files=ovpn_files, 
-                           ovpn_providers=ovpn_providers,
-                           ip_address=ip_address
+    return render_template('index.html', ovpn_files=vpn_list(), 
+                           ovpn_providers=vpn_providers(),
+                           ip_address=get_ip_address(),
+                           docker_containers=get_docker_containers()
                            )
 
 @app.route('/update-credentials', methods=['POST'])
