@@ -28,10 +28,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(response)
                 const result = await response.json();
                 console.log(result)
-                document.getElementById('status').innerText = result.Status;
+                document.getElementById('message').innerText = result.Status;
             } catch (error) {
                 console.error(JSON.stringify(error));
-                document.getElementById('status').innerText = 'Error updating credentials!';
+                document.getElementById('message').innerText = 'Error updating credentials!';
             }
         });
     } else {

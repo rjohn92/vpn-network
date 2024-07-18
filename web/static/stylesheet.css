@@ -1,7 +1,62 @@
-table, th, td {
+body {
+    background-color: #c0c0c0;
+    font-family: "Courier New", Courier, monospace;
+    color: black;
+    text-align: center;
+}
+h1 {
+    background-color: #000080;
+    color: white;
+    padding: 10px;
+    margin: 0;
+}
+h2, h3 {
+    color: #000080;
+    padding: 5px
+}
+.container {
     border: 2px solid black;
+    padding: 20px;
+    margin: 20px auto;
+    width: 70%;
+    background-color: white;
+    text-align: left;
+}
+label {
+    font-weight: bold;
+}
+select, input[type=text], input[type=password] {
+    width: 100%;
+    padding: 5px;
+    margin: 5px 0;
+    border: 1px solid #000080;
+}
+button {
+    width: 10%;
+    padding: 10px;
+    background-color: #000080;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0000cd;
+}
+table {
+    width: 100%;
     border-collapse: collapse;
+    margin: 20px 0;
+}
+table, th, td {
+    border: 1px solid black;
 }
 th, td {
     padding: 10px;
+    text-align: left;
+}
+.status {
+    background-color: #ffffe0;
+    padding: 10px;
+    margin: 20px 0;
+    border: 1px solid #000080;
 }
