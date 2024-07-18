@@ -30,6 +30,17 @@
     <h2>VPN Health</h2>
     <p>Status: {{ ip_address }}</p>
     
+
+    {% macro status_class(status) %}
+        {% if status == 'running' %}
+            status-running
+        {% elif status == 'exited' %}
+            status-stopped
+        {% else %}
+            status-other
+        {% endif %}
+    {% endmacro %}
+    
     <h3>Docker Containers</h3>
     <table>
         <tr>
@@ -41,7 +52,7 @@
         <tr>
             <td>{{container[0]}}</td>
             <td>{{container[1]}}</td>
-            <td>{{container[2]}}</td>
+            <td class="{{ status_class(container[2]) }}">{{ container[2] }}</td>
         </tr>
         {% endfor %}
     </table>

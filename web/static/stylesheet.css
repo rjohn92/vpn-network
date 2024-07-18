@@ -2,7 +2,6 @@ body {
     background-color: #c0c0c0;
     font-family: "Courier New", Courier, monospace;
     color: black;
-    text-align: center;
 }
 h1 {
     background-color: #000080;
@@ -12,7 +11,8 @@ h1 {
 }
 h2, h3 {
     color: #000080;
-    padding: 5px
+    padding: 5px;
+    text-align: left;
 }
 .container {
     border: 2px solid black;
@@ -24,12 +24,14 @@ h2, h3 {
 }
 label {
     font-weight: bold;
+    text-align: left;
 }
 select, input[type=text], input[type=password] {
-    width: 100%;
+    width: 30%;
     padding: 5px;
     margin: 5px 0;
     border: 1px solid #000080;
+   
 }
 button {
     width: 10%;
@@ -59,4 +61,13 @@ th, td {
     padding: 10px;
     margin: 20px 0;
     border: 1px solid #000080;
+}
+.status-running {
+    color: green;
+}
+.status-stopped {
+    color: rgb(126, 36, 55);
+}
+.status-other {
+    color: blue;
 }

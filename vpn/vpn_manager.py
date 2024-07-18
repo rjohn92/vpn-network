@@ -63,8 +63,12 @@ def get_ip_address():
 
 
 def get_docker_containers():
+    """
+    We'll get all the containers, including non-running containers. 
+    Then we'll return the id, name, and status of each container.
+    """
     client = docker.from_env()
-    containers = client.containers.list()
+    containers = client.containers.list(all=True)
     container_info = []
     for container in containers:
         container_info.append([
