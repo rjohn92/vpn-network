@@ -6,6 +6,15 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheet.css') }}">
 </head>
 <body>
+    {% macro status_class(status) %}
+    {% if status == 'running' or status == 'Running' %}
+        status-running
+    {% elif status == 'exited' or status == 'Stopped'%}
+        status-stopped
+    {% else %}
+        status-other
+    {% endif %}
+{% endmacro %}
     <h1>VPN Service</h1>
     <form id="credentials-form">
         <label for="ovpn_provider">OVPN Provider:</label>
@@ -28,18 +37,8 @@
     </form>
     <div id="message"></div>
     <h2>VPN Health</h2>
-    <p>Status: {{ ip_address }}</p>
-    
-
-    {% macro status_class(status) %}
-        {% if status == 'running' %}
-            status-running
-        {% elif status == 'exited' %}
-            status-stopped
-        {% else %}
-            status-other
-        {% endif %}
-    {% endmacro %}
+    <label for="status">VPN is:</label>
+    <span id="status" class="{{ status_class(status) }}">{{ status }}</span>
     
     <h3>Docker Containers</h3>
     <table>
@@ -47,12 +46,15 @@
             <th>ID</th>
             <th>Name</th>
             <th>Status</th>
+            <th>IP Address</th>
         </tr>
         {% for container in docker_containers %}
         <tr>
             <td>{{container[0]}}</td>
             <td>{{container[1]}}</td>
             <td class="{{ status_class(container[2]) }}">{{ container[2] }}</td>
+            <td>{{container[3]}}</td>
+            <td button type="Connect"><button>Connect</button></td>
         </tr>
         {% endfor %}
     </table>

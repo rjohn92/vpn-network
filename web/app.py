@@ -2,7 +2,7 @@ import json
 from flask import Flask, request, render_template, jsonify
 import os
 import sys
-from vpn.vpn_manager import get_docker_containers,vpn_list, vpn_providers, get_ip_address
+from vpn.vpn_manager import get_docker_containers,vpn_list, vpn_providers, get_vpn_status
 
 app = Flask(__name__)
 
@@ -13,7 +13,7 @@ def index():
     #generate the list of ovpn files and providers
     return render_template('index.html', ovpn_files=vpn_list(), 
                            ovpn_providers=vpn_providers(),
-                           ip_address=get_ip_address(),
+                           status=get_vpn_status("vpn-network_vpn_1"),
                            docker_containers=get_docker_containers()
                            )
 

@@ -31,34 +31,27 @@ def vpn_providers():
     return providers
 
 
-import subprocess
-
-def get_ip_address():
-    # Use subprocess to get the default route interface
-    result = subprocess.run(['ip', 'route', 'get', '8.8.8.8'], capture_output=True, text=True)
-    output = result.stdout
-
-    # Extract the interface name from the output
-    interface = None
-    for line in output.split('\n'):
-        if 'dev' in line:
-            interface = line.split('dev')[1].split()[0]
-            break
-
-    if not interface:
-        return "Couldn't find the default route interface"
-
-    # Use subprocess to get the IP address of the identified interface
-    result = subprocess.run(['ip', 'addr', 'show', 'dev', interface], capture_output=True, text=True)
-    output = result.stdout
-
-    # Extract the IP address from the output
-    for line in output.split('\n'):
-        if 'inet ' in line:
-            ip_address = line.split()[1].split('/')[0]
+def get_default_network_ip(container_name, network_name='vpn-network_default'):
+    client = docker.from_env()
+    
+    try:
+        container = client.containers.get(container_name)
+        network_settings = container.attrs['NetworkSettings']['Networks']
+        if network_name in network_settings:
+            ip_address = network_settings[network_name]['IPAddress']
             return ip_address
+        else:
+            return f"Network '{network_name}' not found for container '{container_name}'"
+    except docker.errors.NotFound:
+        return f"Container '{container_name}' not found"
+    except Exception as e:
+        return str(e)
 
-    return "Couldn't find the IP address"
+# Replace 'vpn-network_web_1' with the name of the container you want to get the IP address for
+container_name = 'vpn-network_web_1'
+ip_address = get_default_network_ip(container_name)
+print(f"IP Address of {container_name}: {ip_address}")
+
 
 
 
@@ -71,12 +64,38 @@ def get_docker_containers():
     containers = client.containers.list(all=True)
     container_info = []
     for container in containers:
-        container_info.append([
-            container.short_id,
-            container.name,
-            container.status
-        ])
+        if container.name !="vpn-network_vpn_1" and container.name !="vpn-network_web_1": 
+            container_info.append([
+                container.short_id,
+                container.name,
+                container.status,
+                container.attrs['NetworkSettings']['IPAddress']
+            ])
     return container_info
 
+def get_vpn_status(vpn_container_name):
+    client = docker.from_env()
+    
+    try:
+        container = client.containers.get(vpn_container_name)
+        # Execute the command to check VPN status inside the container
+        exec_log = container.exec_run('pgrep -f openvpn', stdout=True, stderr=True)
+        
+        if exec_log.exit_code == 0:
+            return "Running"
+        else:
+            return "Stopped"
+    except docker.errors.NotFound:
+        return f"Container '{vpn_container_name}' not found"
+    except Exception as e:
+        return str(e)
+    
+print(get_docker_containers())
 
-print(get_ip_address())
+container_name = 'vpn-network_web_1'
+ip_address = get_default_network_ip(container_name)
+print(f"IP Address of {container_name}: {ip_address}")
+
+vpn_container_name = 'vpn-network_vpn_1'
+vpn_status = get_vpn_status(vpn_container_name)
+print(vpn_status)
