@@ -8,7 +8,7 @@ services:
       - "5000:5000"
     volumes:
       - ./web:/app
-      - ./vpn/config:/app/vpn/config  # Map the config directory correctly
+      #- ./vpn/config:/app/vpn/config  # Map the config directory correctly
       - ./vpn/vpn_manager.py:/app/vpn/vpn_manager.py  # Map the vpn_manager.py file correctly
       - /var/run/docker.sock:/var/run/docker.sock  # Add this line to mount the Docker socket
     
