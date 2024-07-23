@@ -27,10 +27,6 @@ if [ ! -f "/etc/openvpn/config/${OVPN_FILE}" ]; then
   exit 1
 fi
 
-#print the variables
-#echo -e "${USERNAME}\n${PASSWORD}" > /etc/openvpn/auth.txt
-
-
 # Start OpenVPN with the provided configuration and credentials
 # Use a here document to pass the credentials via stdin
 openvpn --config /etc/openvpn/config/${OVPN_FILE} --auth-user-pass <(echo -e "${USERNAME}\n${PASSWORD}")

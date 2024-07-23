@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function statusClass(status) {
         if (status === 'running' || status === 'Running') {
             return 'status-running';
-        } else if (status === 'exited' || status === 'Stopped') {
+        } else if (status === 'exited' || status.includes("Stopped") ) {
             return 'status-stopped';
         } else {
             return 'status-other';

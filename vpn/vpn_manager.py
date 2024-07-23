@@ -53,8 +53,6 @@ ip_address = get_default_network_ip(container_name)
 print(f"IP Address of {container_name}: {ip_address}")
 
 
-
-
 def get_docker_containers():
     """
     We'll get all the containers, including non-running containers. 
@@ -88,7 +86,10 @@ def get_vpn_status(vpn_container_name):
     except docker.errors.NotFound:
         return f"Container '{vpn_container_name}' not found"
     except Exception as e:
-        return str(e)
+        print(f"Error with VPN: {str(e)}")
+        return f"Stopped"
+    
+
     
 print(get_docker_containers())
 

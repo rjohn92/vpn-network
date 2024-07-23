@@ -52,5 +52,6 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
-# Docker
-**/Dockerfile
+
+web/vpn/*
+vpn/config/vpn_config.json

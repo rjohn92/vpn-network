@@ -29,7 +29,7 @@ To run this project locally, follow these steps:
    cd vpn-network
 
 ## To Run
-1. Go here:
+2. Go here:
 http://localhost:5000/
 
 - Enter your OpenVPN service provider, username, password and the openvpn configuration you would like to use
