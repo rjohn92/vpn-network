@@ -1,38 +1,20 @@
 version: '3.8'
 
 services:
-  web:
-    build:
-      context: ./web
+  web_vpn:
+    build: .
+    entrypoint: ["/app/entrypoint.sh"]
     ports:
       - "5000:5000"
     volumes:
-      - ./web:/app
-      #- ./vpn/config:/app/vpn/config  # Map the config directory correctly
-      - ./vpn/vpn_manager.py:/app/vpn/vpn_manager.py  # Map the vpn_manager.py file correctly
-      - /var/run/docker.sock:/var/run/docker.sock  # Add this line to mount the Docker socket
-    
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - CONFIG_FILE_PATH=/app/vpn/config/vpn_config.json
-
-  vpn:
-    build:
-      context: ./vpn
-    entrypoint: ["/app/entrypoint.sh"]
-    environment:
-      - CONFIG_FILE_PATH=/etc/openvpn/config/vpn_config.json
-    volumes:
-      - ./vpn/config:/etc/openvpn/config  #Mounts our config files
-      - /var/run/docker.sock:/var/run/docker.sock  # Add this line to mount the Docker socket    
     cap_add:
       - NET_ADMIN
     devices:
       - /dev/net/tun
-    # sysctls:
-    #   - net.ipv6.conf.all.disable_ipv6=0
-    #   - net.ipv6.conf.default.disable_ipv6=0
-    depends_on:
-      - web
     restart: unless-stopped
+
 volumes:
   vpn-config:

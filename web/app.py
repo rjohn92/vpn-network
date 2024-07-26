@@ -13,7 +13,7 @@ def index():
     #generate the list of ovpn files and providers
     return render_template('index.html', ovpn_files=vpn_list(), 
                            ovpn_providers=vpn_providers(),
-                           status=get_vpn_status("vpn-network_vpn_1"),
+                           status=get_vpn_status("vpn-network_web_vpn_1"),
                            docker_containers=get_docker_containers()
                            )
 
@@ -47,8 +47,3 @@ def update_credentials():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"Status: Failed to update credentials!", "Error: {e}"}), 500
-
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
