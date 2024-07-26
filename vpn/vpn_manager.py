@@ -62,7 +62,7 @@ def get_docker_containers():
     containers = client.containers.list(all=True)
     container_info = []
     for container in containers:
-        if container.name !="vpn-network_vpn_1" and container.name !="vpn-network_web_1": 
+        if container.name !="vpn-network_web_vpn_1":
             container_info.append([
                 container.short_id,
                 container.name,

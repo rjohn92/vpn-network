@@ -3,8 +3,9 @@
 #Should tear down everything just in case(?)
 docker-compose down
 
-if [ docker images -q "$1" > /dev/null 2>&1 vpn-network_web_vpn:latest ]; then
-  docker rmi vpn-network_web_vpn:latest	
+# Check if the image exists and remove it if it does
+if docker images -q "vpn-network_web_vpn:latest" > /dev/null 2>&1; then
+  docker rmi vpn-network_web_vpn:latest
 fi
 
 

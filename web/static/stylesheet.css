@@ -3,17 +3,20 @@ body {
     font-family: "Courier New", Courier, monospace;
     color: black;
 }
+
 h1 {
     background-color: #252574;
     color: white;
     padding: 10px;
     margin: 0;
 }
+
 h2, h3 {
     color: #202053;
     padding: 5px;
     text-align: left;
 }
+
 .container {
     border: 2px solid black;
     padding: 20px;
@@ -22,52 +25,63 @@ h2, h3 {
     background-color: white;
     text-align: left;
 }
+
 label {
     font-weight: bold;
     text-align: left;
 }
+
 select, input[type=text], input[type=password] {
     width: 30%;
     padding: 5px;
     margin: 5px 0;
     border: 1px solid #252574;
-   
 }
+
 button {
-    width: 40%;
-    padding: 10px;
+    display: inline-block;
+    padding: 10px 20px;
     background-color: #252574;
     color: white;
     border: none;
     cursor: pointer;
+    text-align: center;
 }
+
 button:hover {
     background-color: #0000cd;
 }
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
 }
+
 table, th, td {
     border: 1px solid black;
 }
+
 th, td {
     padding: 10px;
     text-align: left;
 }
+
 .status {
     background-color: #ffffe0;
     padding: 10px;
     margin: 20px 0;
     border: 1px solid #000080;
 }
+
 .status-running {
     color: green;
 }
+
 .status-stopped {
     color: rgb(126, 36, 55);
 }
+
 .status-other {
     color: blue;
 }
