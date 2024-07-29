@@ -1,7 +1,15 @@
 import os
 import subprocess
-
+import json
+import tempfile
 import docker
+from celery import Celery
+
+vpn_config_path = "/app/vpn/config/"
+
+# Initialize Celery
+celery_app = Celery('tasks', broker='redis://localhost:6379/0')
+
 
 def vpn_list():
     config_dir = './vpn/config'  # This path should match the volume mapping in docker-compose.yml
@@ -47,12 +55,6 @@ def get_default_network_ip(container_name, network_name='vpn-network_default'):
     except Exception as e:
         return str(e)
 
-# Replace 'vpn-network_web_1' with the name of the container you want to get the IP address for
-container_name = 'vpn-network_web_1'
-ip_address = get_default_network_ip(container_name)
-print(f"IP Address of {container_name}: {ip_address}")
-
-
 def get_docker_containers():
     """
     We'll get all the containers, including non-running containers. 
@@ -90,13 +92,25 @@ def get_vpn_status(vpn_container_name):
         return f"Stopped"
     
 
+def validate_vpn_credentials(username,password, ovpn_file):
+    ovpn_file_path = os.path.join(vpn_config_path,ovpn_file)
+
+
+    try:
+        result = subprocess.run(["openvpn",
+                                  "--config", 
+                                  ovpn_file_path,
+                                  "--auth-user-pass",
+                                  f"{username}\n{password}\n"],
+                                  capture_output=True,
+                                  text=True,
+                                  check=True)
+        return result.returncode == 0
+    except subprocess.CalledProcessError:
+        return False
+
     
-print(get_docker_containers())
-
-container_name = 'vpn-network_web_1'
-ip_address = get_default_network_ip(container_name)
-print(f"IP Address of {container_name}: {ip_address}")
-
-vpn_container_name = 'vpn-network_vpn_1'
-vpn_status = get_vpn_status(vpn_container_name)
-print(vpn_status)
+def save_config(config_data):
+    config_path="app/vpn/config/vpn_config.json"
+    with open(config_data, 'w') as config_file:
+        json.dump(config_data, config_file)

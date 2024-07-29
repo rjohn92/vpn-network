@@ -8,7 +8,10 @@ services:
       - "5000:5000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./web:/app/web
+      - ./vpn:/app/vpn
     environment:
+      - FLASK_ENV=development
       - CONFIG_FILE_PATH=/app/vpn/config/vpn_config.json
     cap_add:
       - NET_ADMIN
@@ -18,3 +21,7 @@ services:
 
 volumes:
   vpn-config:
+
+networks:
+  ${NETWORK_NAME}:
+    driver: bridge

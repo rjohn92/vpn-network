@@ -7,30 +7,37 @@
 </head>
 <body>
     <h1>VPN Service</h1>
-    <form id="credentials-form">
-        <label for="ovpn_provider">OVPN Provider:</label>
-        <select id="ovpn_provider" name="ovpn_provider">
-            {% for ovpn_provider in ovpn_providers %}
-                <option value="{{ ovpn_provider }}">{{ ovpn_provider }}</option>
-            {% endfor %}
-        </select><br><br>
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username"><br><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password"><br><br>
-        <label for="ovpn_file">OVPN File:</label>
-        <select id="ovpn_file" name="ovpn_file">
-            {% for ovpn_file in ovpn_files %}
-                <option value="{{ ovpn_file }}">{{ ovpn_file }}</option>
-            {% endfor %}
-        </select><br><br>
-        <button type="submit">Submit</button>
-    </form>
-    <div id="message"></div>
-    <h2>VPN Health</h2>
-    <label for="status">VPN is:</label>
-    <span id="status" data-status="{{ status }}">{{ status }}</span>
-
+    <div class="container">
+        <div class="split left">
+            <form id="credentials-form">
+                <label for="ovpn_provider">OVPN Provider:</label>
+                <select id="ovpn_provider" name="ovpn_provider">
+                    {% for ovpn_provider in ovpn_providers %}
+                        <option value="{{ ovpn_provider }}">{{ ovpn_provider }}</option>
+                    {% endfor %}
+                </select><br><br>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username"><br><br>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password"><br><br>
+                <label for="ovpn_file">OVPN File:</label>
+                <select id="ovpn_file" name="ovpn_file">
+                    {% for ovpn_file in ovpn_files %}
+                        <option value="{{ ovpn_file }}">{{ ovpn_file }}</option>
+                    {% endfor %}
+                </select><br><br>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        
+        <div class="split right">
+            <div id="message"></div>
+            <h2>VPN Health</h2>
+            <label for="status">VPN is:</label>
+            <span id="status" data-status="{{ status }}">{{ status }}</span>
+        </div>
+    </div>
+    
     <h3>Docker Containers</h3>
     <table>
         <tr>
@@ -50,7 +57,6 @@
         </tr>
         {% endfor %}
     </table>
-
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

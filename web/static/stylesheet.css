@@ -2,6 +2,8 @@ body {
     background-color: #c0c0c0;
     font-family: "Courier New", Courier, monospace;
     color: black;
+    margin: 0;
+    padding: 0;
 }
 
 h1 {
@@ -9,6 +11,7 @@ h1 {
     color: white;
     padding: 10px;
     margin: 0;
+    text-align: center;
 }
 
 h2, h3 {
@@ -18,22 +21,28 @@ h2, h3 {
 }
 
 .container {
-    border: 2px solid black;
+    display: flex;
+    justify-content: space-between;
+    margin: 20px;
+    background-color: #c0c0c0;
     padding: 20px;
-    margin: 20px auto;
-    width: 70%;
-    background-color: white;
-    text-align: left;
+    background-color: #c0c0c0;
+    border-radius: 5px;
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
+}
+
+.split {
+    width: 45%;
 }
 
 label {
-    font-weight: bold;
+    font-weight: bolder;
     text-align: left;
 }
 
 select, input[type=text], input[type=password] {
-    width: 30%;
-    padding: 5px;
+    width: 100%;
+    padding: 10px;
     margin: 5px 0;
     border: 1px solid #252574;
 }
@@ -53,9 +62,10 @@ button:hover {
 }
 
 table {
-    width: 100%;
+    width: 90%;
     border-collapse: collapse;
-    margin: 20px 0;
+    margin: 20px auto;
+    background-color: #c0c0c0;
 }
 
 table, th, td {
@@ -76,10 +86,12 @@ th, td {
 
 .status-running {
     color: green;
+    font-weight: bold;
 }
 
 .status-stopped {
     color: rgb(126, 36, 55);
+    font-weight: bold;
 }
 
 .status-other {
