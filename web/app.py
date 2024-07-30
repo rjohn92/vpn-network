@@ -8,7 +8,7 @@ from vpn.vpn_manager import get_docker_containers,vpn_list, vpn_providers, get_v
 
 app = Flask(__name__)
 
-CONFIG_FILE_PATH = '/app/vpn/config/vpn_config.json'
+CONFIG_FILE_PATH = '/app/vpn/config'
 NETWORK_NAME = os.getenv('NETWORK_NAME', 'vpn_network')
 
 
@@ -30,7 +30,7 @@ def update_credentials():
         password = data.get('password')
         ovpn_file = data.get('ovpn_file')
 
-        if not username or not password or ovpn_file == "----Select VPN Location----":
+        if not username or not password or ovpn_file == "----Select VPN Location----" or ovpn_provider == "----Select VPN Provider----" :
             return jsonify({"Status": "Missing required fields!"})
 
          #create the json for the config data to get it written to a file
@@ -41,12 +41,19 @@ def update_credentials():
             'OVPN_FILE': ovpn_file
         }
 
-        if validate_vpn_credentials(username, password, ovpn_file):
-            save_config(config_data)
-            return jsonify({"Status": "Credentials are valid! Network created."})
-        else:            
-            return jsonify({"Status": "Invalid VPN credentials. Network could not be created."})
-
+        result = subprocess.run(["openvpn",
+                    "--config", 
+                    os.path.join(CONFIG_FILE_PATH, ovpn_file),
+                    "--auth-user-pass",
+                    f"<(echo -e '{username}\n{password}')"],
+                    capture_output=True,
+                    text=True,
+                    shell=True)
+        
+        if result.returncode == 0:
+            return jsonify({"Status": "Credentials are valid! VPN instance started."}), 200
+        else:
+            return jsonify({"Status": "Failed to start VPN instance! Check your credentials."})
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"Status": f"Failed to update credentials!"}), 500

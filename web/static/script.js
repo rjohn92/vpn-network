@@ -51,7 +51,5 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('message').innerText = 'Error updating credentials!';
             }
         });
-    } else {
-        console.error('Credentials form not found!');
     }
 });
