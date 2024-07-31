@@ -69,7 +69,7 @@ def get_docker_containers():
                 container.short_id,
                 container.name,
                 container.status,
-                container.attrs['NetworkSettings']['IPAddress']
+                get_container_ip(container.name)
             ])
     return container_info
 
@@ -92,25 +92,35 @@ def get_vpn_status(vpn_container_name):
         return f"Stopped"
     
 
-def validate_vpn_credentials(username,password, ovpn_file):
-    ovpn_file_path = os.path.join(vpn_config_path,ovpn_file)
-
+def get_container_ip(container_name):
+    # Create a Docker client
+    client = docker.from_env()
 
     try:
-        result = subprocess.run(["openvpn",
-                                  "--config", 
-                                  ovpn_file_path,
-                                  "--auth-user-pass",
-                                  f"{username}\n{password}\n"],
-                                  capture_output=True,
-                                  text=True,
-                                  check=True)
-        return result.returncode == 0
-    except subprocess.CalledProcessError:
-        return False
-
-    
+        # Get the container object
+        container = client.containers.get(container_name)
+        
+        # Retrieve network settings
+        network_settings = container.attrs.get('NetworkSettings', {})
+        networks = network_settings.get('Networks', {})
+        
+        # Extract IP addresses from all networks
+        ip_addresses = [network.get('IPAddress', '') for network in networks.values()]
+        
+        # Concatenate IP addresses into a single string
+        ip_address_string = ''.join(ip_addresses) if ip_addresses else 'No IP address found'
+        
+        return ip_address_string
+    except docker.errors.NotFound:
+        print(f"Container '{container_name}' not found.")
+        return None
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+        
 def save_config(config_data):
     config_path="app/vpn/config/vpn_config.json"
     with open(config_data, 'w') as config_file:
         json.dump(config_data, config_file)
+
+

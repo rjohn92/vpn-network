@@ -4,7 +4,7 @@ from celery import Celery
 from flask import Flask, request, render_template, jsonify
 import os
 import sys
-from vpn.vpn_manager import get_docker_containers,vpn_list, vpn_providers, get_vpn_status, validate_vpn_credentials, save_config
+from vpn.vpn_manager import get_docker_containers,vpn_list, vpn_providers, get_vpn_status, save_config
 
 app = Flask(__name__)
 
