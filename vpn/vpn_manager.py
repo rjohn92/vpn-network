@@ -3,13 +3,16 @@ import subprocess
 import json
 import tempfile
 import docker
-from celery import Celery
+import logging
 
-vpn_config_path = "/app/vpn/config/"
+#config files in the docker container
+CONFIG_FILE_PATH = "/app/vpn/config/"
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Initialize Celery
-celery_app = Celery('tasks', broker='redis://localhost:6379/0')
-
+network_logs = "/tmp/network.log"
+openvpn_logs = "/tmp/openvpn.log"
 
 def vpn_list():
     config_dir = './vpn/config'  # This path should match the volume mapping in docker-compose.yml
@@ -101,11 +104,11 @@ def get_container_ip(container_name):
         container = client.containers.get(container_name)
         
         # Retrieve network settings
-        network_settings = container.attrs.get('NetworkSettings', {})
-        networks = network_settings.get('Networks', {})
+        network_settings = container.attrs.get('NetworkSettings')
+        networks = network_settings.get('Networks')
         
         # Extract IP addresses from all networks
-        ip_addresses = [network.get('IPAddress', '') for network in networks.values()]
+        ip_addresses = [network.get('IPAddress') for network in networks.values()]
         
         # Concatenate IP addresses into a single string
         ip_address_string = ''.join(ip_addresses) if ip_addresses else 'No IP address found'
@@ -118,9 +121,59 @@ def get_container_ip(container_name):
         print(f"An error occurred: {e}")
         return None
         
-def save_config(config_data):
-    config_path="app/vpn/config/vpn_config.json"
-    with open(config_data, 'w') as config_file:
-        json.dump(config_data, config_file)
+def create_network():
+    try:
+        result = subprocess.run(["docker",
+                          "network",
+                          "create",
+                          "private_network",
+                          "--log",
+                          network_logs])
+        logger.info(f"Network created successfully: {result.stdout}")
 
+    except Exception as e:
+        logger.info(f"Failed to generate network: {e}")
+        
+
+def start_vpn(ovpn_file, username, password):
+    selected_ovpn_file = os.path.join(CONFIG_FILE_PATH, ovpn_file)
+
+    # Create a temporary file for the username and password
+    with tempfile.NamedTemporaryFile(delete=False) as auth_file:
+        auth_file.write(f"{username}\n{password}".encode())
+        auth_file_path = auth_file.name
+        logger.info(auth_file)
+
+    logger.info(f"Created temporary auth file at {auth_file_path}")
+
+    try:
+        process = subprocess.Popen(
+                ["openvpn", 
+                 "--config", 
+                selected_ovpn_file,
+                "--auth-user-pass",
+                auth_file_path,
+                "--log",
+                openvpn_logs],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        logger.info(f"Started OpenVPN process with PID {process.pid}")
+
+        stdout, stderr = process.communicate(timeout=60)  # Increase timeout as needed
+        logger.info(f"OpenVPN process output: {stdout.decode()}")
+        logger.error(f"OpenVPN process error: {stderr.decode()}")
+
+        return process.pid
+    except subprocess.TimeoutExpired:
+        process.kill()
+        stdout, stderr = process.communicate()
+        logger.error(f"OpenVPN process timed out: {stderr.decode()}")
+        raise
+    except Exception as e:
+        logger.error(f"Failed to start OpenVPN: {e}")
+        raise
+    finally:
+        os.remove(auth_file_path)
+        logger.info(f"Deleted temporary auth file at {auth_file_path}")
 

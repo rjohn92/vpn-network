@@ -1,12 +1,17 @@
 import json
+import logging
 import subprocess
 from celery import Celery
 from flask import Flask, request, render_template, jsonify
 import os
 import sys
-from vpn.vpn_manager import get_docker_containers,vpn_list, vpn_providers, get_vpn_status, save_config
+from vpn.vpn_manager import start_vpn, get_docker_containers,vpn_list, vpn_providers, get_vpn_status, save_config
+
 
 app = Flask(__name__)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 CONFIG_FILE_PATH = '/app/vpn/config'
 NETWORK_NAME = os.getenv('NETWORK_NAME', 'vpn_network')
@@ -33,24 +38,11 @@ def update_credentials():
         if not username or not password or ovpn_file == "----Select VPN Location----" or ovpn_provider == "----Select VPN Provider----" :
             return jsonify({"Status": "Missing required fields!"})
 
-         #create the json for the config data to get it written to a file
-        config_data = {
-            'OVPN_PROVIDER': ovpn_provider,
-            'USERNAME': username,
-            'PASSWORD': password,
-            'OVPN_FILE': ovpn_file
-        }
+        logger.info(f"Attempting to start VPN in app.py.")
 
-        result = subprocess.run(["openvpn",
-                    "--config", 
-                    os.path.join(CONFIG_FILE_PATH, ovpn_file),
-                    "--auth-user-pass",
-                    f"<(echo -e '{username}\n{password}')"],
-                    capture_output=True,
-                    text=True,
-                    shell=True)
-        
-        if result.returncode == 0:
+
+        pid =start_vpn(ovpn_file,username, password)
+        if pid:
             return jsonify({"Status": "Credentials are valid! VPN instance started."}), 200
         else:
             return jsonify({"Status": "Failed to start VPN instance! Check your credentials."})
