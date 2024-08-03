@@ -1,9 +1,10 @@
 import os
 import subprocess
-import json
 import tempfile
 import docker
 import logging
+
+from flask import jsonify
 
 #config files in the docker container
 CONFIG_FILE_PATH = "/app/vpn/config/"
@@ -13,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 network_logs = "/tmp/network.log"
 openvpn_logs = "/tmp/openvpn.log"
+
+#set the docker client
+client = docker.from_env()
 
 def vpn_list():
     config_dir = './vpn/config'  # This path should match the volume mapping in docker-compose.yml
@@ -43,7 +47,6 @@ def vpn_providers():
 
 
 def get_default_network_ip(container_name, network_name='vpn-network_default'):
-    client = docker.from_env()
     
     try:
         container = client.containers.get(container_name)
@@ -63,7 +66,6 @@ def get_docker_containers():
     We'll get all the containers, including non-running containers. 
     Then we'll return the id, name, and status of each container.
     """
-    client = docker.from_env()
     containers = client.containers.list(all=True)
     container_info = []
     for container in containers:
@@ -77,16 +79,15 @@ def get_docker_containers():
     return container_info
 
 def get_vpn_status(vpn_container_name):
-    client = docker.from_env()
     
     try:
         container = client.containers.get(vpn_container_name)
         # Execute the command to check VPN status inside the container
-        exec_log = container.exec_run('pgrep -f openvpn', stdout=True, stderr=True)
+        status = container.status 
         
-        if exec_log.exit_code == 0:
+        if status  == "running":
             return "Running"
-        else:
+        elif status== "exited":
             return "Stopped"
     except docker.errors.NotFound:
         return f"Container '{vpn_container_name}' not found"
@@ -96,8 +97,7 @@ def get_vpn_status(vpn_container_name):
     
 
 def get_container_ip(container_name):
-    # Create a Docker client
-    client = docker.from_env()
+
 
     try:
         # Get the container object
@@ -121,59 +121,127 @@ def get_container_ip(container_name):
         print(f"An error occurred: {e}")
         return None
         
-def create_network():
+def create_network(network_name):
     try:
-        result = subprocess.run(["docker",
-                          "network",
-                          "create",
-                          "private_network",
-                          "--log",
-                          network_logs])
-        logger.info(f"Network created successfully: {result.stdout}")
-
+        network = client.networks.create(network_name)
+        logger.info(f"Network created successfully: {network.name}")
     except Exception as e:
-        logger.info(f"Failed to generate network: {e}")
+        logger.error(f"Failed to generate network: {e}")
         
 
-def start_vpn(ovpn_file, username, password):
-    selected_ovpn_file = os.path.join(CONFIG_FILE_PATH, ovpn_file)
+def remove_network(network_name):
+    try:
+        network = client.networks.get(network_name)
+        network.remove()
+        logger.info(f"Network: {network_name} removed")
+    except:
+        logger.info(f"Network: {network_name} could not be removed")
 
-    # Create a temporary file for the username and password
-    with tempfile.NamedTemporaryFile(delete=False) as auth_file:
+
+def start_vpn(ovpn_provider, ovpn_file, username, password):
+    if not ovpn_provider or not username or not password or not ovpn_file:
+        return {"Status": "Missing required fields!"}, 400
+
+    if ovpn_provider == "----Select VPN Provider----":
+        return {"Status": "You must select an OVPN Provider!"},400
+
+    if ovpn_file == "----Select VPN Location----":
+        return {"Status": "You must select an OVPN File!"}, 400
+
+
+    # Save files temporarily
+    ovpn_file_path, auth_file_path = save_user_files(ovpn_file, username, password)
+
+    # Start VPN container
+    container = start_vpn_container(ovpn_file_path, auth_file_path)
+    print(container)
+    if container:
+        return {"Status": "VPN container started successfully!"}, 200
+    else:
+        return {"Status": "Failed to start VPN container!"}, 500
+
+
+def save_user_files(ovpn_file_content, username, password):
+    # Save the .ovpn file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".ovpn") as ovpn_file:
+        ovpn_file.write(ovpn_file_content.encode())
+        ovpn_file_path = ovpn_file.name
+
+    # Save the credentials
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as auth_file:
         auth_file.write(f"{username}\n{password}".encode())
         auth_file_path = auth_file.name
-        logger.info(auth_file)
 
-    logger.info(f"Created temporary auth file at {auth_file_path}")
+    return ovpn_file_path, auth_file_path
 
+
+def start_vpn_container(ovpn_file_path, auth_file_path,container_name="vpn_container"):
+    remove_container(container_name)
     try:
-        process = subprocess.Popen(
-                ["openvpn", 
-                 "--config", 
-                selected_ovpn_file,
-                "--auth-user-pass",
-                auth_file_path,
-                "--log",
-                openvpn_logs],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+        build_image()
+        container = client.containers.run(
+            "custom_vpn_client",
+            name=container_name,
+            network="private_network",
+            volumes={
+                ovpn_file_path: {'bind': '/etc/openvpn/config.ovpn', 'mode': 'ro'},
+                auth_file_path: {'bind': '/etc/openvpn/auth.txt', 'mode': 'ro'}
+            },
+            detach=True
         )
-        logger.info(f"Started OpenVPN process with PID {process.pid}")
+        return container
+        
+    except docker.errors.APIError as e:
+        print(f"Failed to start VPN container: {e}")
+        return None
 
-        stdout, stderr = process.communicate(timeout=60)  # Increase timeout as needed
-        logger.info(f"OpenVPN process output: {stdout.decode()}")
-        logger.error(f"OpenVPN process error: {stderr.decode()}")
-
-        return process.pid
-    except subprocess.TimeoutExpired:
-        process.kill()
-        stdout, stderr = process.communicate()
-        logger.error(f"OpenVPN process timed out: {stderr.decode()}")
-        raise
+def stop_container(container_name="vpn_container"):
+    try:
+        container = client.containers.get(container_name)
+        container.stop()
+        logger.info(f"Stopped VPN container: {container_name}")
+        return {f"Status": "VPN container stopped successfully!"}, 200
     except Exception as e:
-        logger.error(f"Failed to start OpenVPN: {e}")
-        raise
-    finally:
-        os.remove(auth_file_path)
-        logger.info(f"Deleted temporary auth file at {auth_file_path}")
+        logger.error(f"Failed to stop VPN container: {e}")
+        return {"Status": "Failed to stop VPN container!"}, 500
 
+def build_image():
+    try:
+        image_name = "custom_vpn_client"
+        dockerfile_path = "vpn"  # Adjust this path
+
+        logger.info(f"Building Docker image: {image_name}")
+        
+        # Build the image
+        client.images.build(path=dockerfile_path, tag=image_name)
+        
+        logger.info(f"Successfully built Docker image: {image_name}")
+    except docker.errors.BuildError as e:
+        logger.error(f"Failed to build Docker image: {e}")
+        raise
+    except docker.errors.APIError as e:
+        logger.error(f"Docker API error: {e}")
+        raise
+
+def remove_container(container_name):
+    try: 
+        container = client.containers.get(container_name)
+        container.remove(force=True)
+        logger.info(f"Successfully removed container: {container_name}")
+    except docker.errors.NotFound:
+        logger.info(f"Container {container_name} not found")
+    except docker.errors.APIError as e:
+        logger.error(f"Failed to remove container: {e}")
+
+
+def get_vpn_logs(container_name="vpn_container"):
+    try:
+        container = client.containers.get(container_name)
+        logs = container.logs(tail=100).decode('utf-8')  # Get the last 100 lines of logs
+        return logs
+    except docker.errors.NotFound:
+        logger.error(f"Container {container_name} not found. Cannot retrieve logs.")
+        return None
+    except docker.errors.APIError as e:
+        logger.error(f"Failed to get logs for container {container_name}: {e}")
+        return None
