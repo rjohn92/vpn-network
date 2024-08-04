@@ -2,7 +2,9 @@
 FROM ubuntu:latest
 
 # Install OpenVPN
-RUN apt-get update && apt-get install -y openvpn
+RUN apt-get update && \
+    apt-get install -y openvpn iptables\
+    apt-clean
 
 # Copy VPN configuration files into the container
 COPY entrypoint.sh /usr/local/bin/

@@ -26,7 +26,8 @@
                         <option value="{{ ovpn_file }}">{{ ovpn_file }}</option>
                     {% endfor %}
                 </select><br><br>
-                <button type="submit">Submit</button>
+                <button type="submit">Start</button>
+                <button type="button" id="disconnectButton">Stop</button>
             </form>
         </div>
         
@@ -53,7 +54,7 @@
             <td>{{ container[1] }}</td>
             <td data-status="{{ container[2] }}">{{ container[2] }}</td>
             <td>{{ container[3] }}</td>
-            <td><button class="connect-btn">Connect</button></td>
+            <td><button class="connect-btn" data-id="{{ container[1] }}">Connect</button></td>
         </tr>
         {% endfor %}
     </table>

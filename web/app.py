@@ -54,6 +54,16 @@ def stop_vpn():
     except Exception as e:
         return jsonify({"Status": "Failed to stop VPN container!"})
     
+@app.route('/connect-container', methods=['POST'])
+def connect_container():
+    try:
+        data = request.json
+        container_name = data.get('containerName')  # Get the container name from the request
+        response, status_code = vpn.vpn_manager.connect_container(container_name)
+        return response, status_code
+    except Exception as e:
+        return jsonify({"Status": "Failed to connect container!"}), 500
+    
 app.route('/vpn-logs', methods = ['GET'])
 def vpn_logs():
     logs = vpn.vpn_manager.get_vpn_logs()

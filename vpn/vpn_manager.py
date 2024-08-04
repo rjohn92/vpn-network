@@ -68,8 +68,9 @@ def get_docker_containers():
     """
     containers = client.containers.list(all=True)
     container_info = []
+    containers_to_ignore = ["vpn_container","vpn-network_web_vpn_1"]
     for container in containers:
-        if container.name !="vpn-network_web_vpn_1":
+        if container.name not in containers_to_ignore:
             container_info.append([
                 container.short_id,
                 container.name,
@@ -87,13 +88,10 @@ def get_vpn_status(vpn_container_name):
         
         if status  == "running":
             return "Running"
-        elif status== "exited":
+        else:
             return "Stopped"
     except docker.errors.NotFound:
-        return f"Container '{vpn_container_name}' not found"
-    except Exception as e:
-        print(f"Error with VPN: {str(e)}")
-        return f"Stopped"
+        return "Stopped"
     
 
 def get_container_ip(container_name):
@@ -187,7 +185,8 @@ def start_vpn_container(ovpn_file_path, auth_file_path,container_name="vpn_conta
                 ovpn_file_path: {'bind': '/etc/openvpn/config.ovpn', 'mode': 'ro'},
                 auth_file_path: {'bind': '/etc/openvpn/auth.txt', 'mode': 'ro'}
             },
-            detach=True
+            detach=True,
+            cap_add=["NET_ADMIN"]
         )
         return container
         
@@ -245,3 +244,18 @@ def get_vpn_logs(container_name="vpn_container"):
     except docker.errors.APIError as e:
         logger.error(f"Failed to get logs for container {container_name}: {e}")
         return None
+    
+def connect_container(container_name, network_name="private_network"):
+    try:
+        container = client.containers.get(container_name)
+        
+        network = client.networks.get(network_name)
+        container.exec_run(f"ip route add default via {container.attrs['NetworkSettings']['IPAddress']}")
+
+        network.connect(container)
+        return {"Status": f"Container {container_name} connected to {network_name}"}, 200
+
+    except docker.errors.NotFound as e:
+        return {"Status": f"{network_name} not found!"}
+    except Exception as e:
+        return {"Status": f"Failed to connect {container_name} to {network_name}"}, 500

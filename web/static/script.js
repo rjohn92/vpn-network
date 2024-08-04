@@ -50,6 +50,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error(JSON.stringify(error));
                 document.getElementById('message').innerText = 'Error updating credentials!';
             }
-        });
+        });        
     }
-});
+    // Add event listener to the disconnect button
+    const disconnectButton = document.getElementById('disconnectButton');
+    if (disconnectButton) {
+        disconnectButton.addEventListener('click', async function() {
+            try {
+                const response = await fetch('/stop-vpn', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const result = await response.json();
+                console.log(result);
+                alert(result.Status);
+            } catch (error) {
+                console.error(JSON.stringify(error));
+                alert('Error disconnecting VPN!');
+            }
+        });   
+    }
+    const connectButtons = document.querySelectorAll('.connect-btn');
+    
+    connectButtons.forEach(button => {
+        button.addEventListener('click', async function() {
+            const containerName = button.getAttribute('data-container'); // Get the container name from the button's data attribute            try {
+            try {    
+                const response = await fetch('/connect-container', {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ containerName }) // Send container name as JSON
+
+                });
+                const result = await response.json();
+                console.log(result);
+                alert(result.Status)
+            } catch (error) {
+                console.error(JSON.stringify(error));
+                alert('Error connecting Container!');
+            }
+        });
+        });
+    });
